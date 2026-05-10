@@ -53,7 +53,7 @@ cards:
       - type: entities
         title: Host
         entities:
-          - entity: sensor.system_overview_vardnamn
+          - entity: sensor.system_overview_hostname
             name: Hostname
           - entity: sensor.system_overview_host_ip
             name: IP address
