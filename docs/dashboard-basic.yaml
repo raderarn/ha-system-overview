@@ -1,0 +1,95 @@
+type: vertical-stack
+cards:
+  - type: grid
+    columns: 3
+    square: false
+    cards:
+      - type: entities
+        title: Core
+        entities:
+          - entity: sensor.system_overview_core_version
+            name: Version
+          - entity: sensor.system_overview_core_latest_version
+            name: Latest version
+          - entity: sensor.system_overview_core_update_available
+            name: Update available
+          - entity: sensor.system_overview_core_cpu_percent
+            name: Core CPU usage
+          - entity: sensor.system_overview_core_memory_percent
+            name: Core memory usage
+          - type: button
+            name: Restart Core
+            icon: mdi:restart
+            tap_action:
+              action: call-service
+              service: homeassistant.restart
+      - type: entities
+        title: Supervisor
+        entities:
+          - entity: sensor.system_overview_supervisor_version
+            name: Version
+          - entity: sensor.system_overview_supervisor_latest_version
+            name: Latest version
+          - entity: sensor.system_overview_supervisor_channel
+            name: Channel
+          - entity: sensor.system_overview_installation_supported
+            name: Installation supported
+          - entity: sensor.system_overview_supervisor_update_available
+            name: Update available
+          - entity: sensor.system_overview_supervisor_cpu_percent
+            name: Supervisor CPU usage
+          - entity: sensor.system_overview_supervisor_memory_percent
+            name: Supervisor memory usage
+          - type: button
+            name: Restart Supervisor
+            icon: mdi:cogs
+            tap_action:
+              action: call-service
+              service: hassio.supervisor_restart
+      - type: entities
+        title: Host
+        entities:
+          - entity: sensor.system_overview_vardnamn
+            name: Hostname
+          - entity: sensor.system_overview_host_ip
+            name: IP address
+          - entity: sensor.system_overview_host_os_supervisor
+            name: Operating system
+          - entity: sensor.system_overview_host_os
+            name: Host OS
+          - entity: sensor.system_overview_docker_version
+            name: Docker version
+          - entity: sensor.system_overview_host_cpu_percent
+            name: CPU usage
+          - entity: sensor.system_overview_host_memory_percent
+            name: Memory usage
+          - entity: sensor.system_overview_host_disk_used_percent
+            name: Disk usage
+          - type: button
+            name: Network settings
+            icon: mdi:network
+            tap_action:
+              action: navigate
+              navigation_path: /config/system/network
+          - type: button
+            name: Restart host
+            icon: mdi:server
+            tap_action:
+              action: call-service
+              service: hassio.host_reboot
+  - type: vertical-stack
+    cards:
+      - type: entities
+        entities:
+          - select.system_overview_log_provider
+      - type: markdown
+        title: System logs
+        entity_id:
+          - sensor.system_overview_logs
+          - select.system_overview_log_provider
+        content: >
+          {% set provider = states('select.system_overview_log_provider') %} {%
+          set t = state_attr('sensor.system_overview_logs', 'text') %}
+          **Source:** {{ provider }}
+
+          ```text {{ t if t else 'No log data' }} ```
