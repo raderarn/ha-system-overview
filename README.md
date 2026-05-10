@@ -41,7 +41,7 @@ Changing the select option updates the log output immediately.
 
 ## Dashboard preview 
 
-[System Overview dashboard](docs/images/dashboard.png)
+![System Overview dashboard](docs/images/dashboard.png)
 
 ---
 
