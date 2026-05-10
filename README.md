@@ -39,18 +39,9 @@ Changing the select option updates the log output immediately.
 
 ---
 
-## Dashboard preview (minimal)
+## Dashboard preview 
 
-The snippet below is a short, copy-paste friendly preview showing how
-the log viewer is used. It works on a default Home Assistant installation
-and does **not** require any custom Lovelace cards.
-
-```yaml
-type: entities
-entities:
-  - select.system_overview_log_provider
-  - sensor.system_overview_logs
-```
+[System Overview dashboard](docs/images/dashboard.png)
 
 ---
 
