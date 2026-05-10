@@ -66,11 +66,62 @@ class SystemOverviewOverviewSensor(SystemOverviewBaseSensor):
         return self.coordinator.data or {}
 
 
+class SystemOverviewLogsSensor(CoordinatorEntity, SensorEntity):
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _attr_name = NAME + " Logs"
+    _attr_unique_id = DOMAIN + "_logs"
+    _attr_icon = "mdi:file-document-outline"
+
+    def __init__(self, logs_coordinator):
+        super().__init__(logs_coordinator)
+        self._logs = logs_coordinator
+
+    @property
+    def device_info(self):
+        data = None
+        try:
+            data = self.coordinator.data or {}
+        except Exception:
+            data = {}
+        provider = data.get("provider") if isinstance(data, dict) else None
+        return {
+            "identifiers": {(DOMAIN, "system")},
+            "name": NAME,
+            "manufacturer": "Home Assistant",
+            "model": provider or "logs",
+        }
+
+    @property
+    def native_value(self):
+        data = self._logs.data or {}
+        provider = None
+        if isinstance(data, dict):
+            provider = data.get("provider")
+        if provider:
+            return provider
+        return getattr(self._logs, "provider", None)
+
+    @property
+    def extra_state_attributes(self):
+        data = self._logs.data or {}
+        if not isinstance(data, dict):
+            data = {}
+        return {
+            "available": data.get("available"),
+            "provider": data.get("provider"),
+            "text": data.get("text", ""),
+            "error": data.get("error"),
+        }
+
+
 async def async_setup_entry(hass, entry, async_add_entities):
-    coordinator = entry.runtime_data
+    data = hass.data[DOMAIN][entry.entry_id]
+    coordinator = data["coordinator"]
+    logs_coordinator = data["logs_coordinator"]
 
     entities = [
         SystemOverviewOverviewSensor(coordinator),
+        SystemOverviewLogsSensor(logs_coordinator),
 
         SystemOverviewBaseSensor(
             coordinator, "core_latest", "Core Latest Version",
@@ -136,7 +187,7 @@ async def async_setup_entry(hass, entry, async_add_entities):
         ),
         SystemOverviewBaseSensor(
             coordinator, "docker_version", "Docker Version",
-            ["host", "docker_version"], None, None, None,
+            ["host", "docker_version"], None, None, None
         ),
         SystemOverviewBaseSensor(
             coordinator, "host_cpu", "Host CPU Percent",

@@ -1,78 +1,93 @@
-# System Overview – Home Assistant
+# System Overview
 
-**System Overview** is a custom integration for Home Assistant that restores and extends
-system-level information previously available under **Supervisor → System → Info**,
-which was removed in later Home Assistant releases.
+System Overview is a Home Assistant custom integration that provides a
+centralized view of Home Assistant Core, Supervisor, and Host system
+information.
 
-The integration provides structured and reliable visibility into the Home Assistant
-runtime environment and is primarily intended for advanced users and system operators.
-
----
+The integration also includes a flexible log viewer that allows you to
+switch between different system log sources directly from the dashboard.
 
 ## Features
 
-- Sensors for:
-  - Home Assistant Core
-  - Supervisor
-  - Host system
-- CPU, memory, and disk usage metrics
-- Version and update availability information
-- UI-based setup via Config Flow
-- Diagnostics support for troubleshooting
-- Built using `DataUpdateCoordinator`
+- Home Assistant Core information (version, updates, CPU, memory)
+- Supervisor information (version, channel, updates, CPU, memory)
+- Host information (OS, hostname, IP address, disk usage, Docker version)
+- Restart buttons for Core, Supervisor, and Host
+- Integrated system log viewer with selectable log source
 
----
+## Log viewer
 
-## Installation
+The integration exposes a log sensor and a select entity:
 
-### HACS (recommended)
+- `sensor.system_overview_logs`  
+  Holds the current log output.
 
-1. Open **HACS → Integrations**
-2. Add this repository as a **Custom repository**
-3. Search for **System Overview**
-4. Install and restart Home Assistant
+- `select.system_overview_log_provider`  
+  Select which log source to display:
+  - supervisor
+  - core
+  - host
+  - dns
+  - audio
+  - multicast
 
----
+Changing the select option immediately updates the log output.
 
-### Manual installation
+## Dashboard examples
 
-1. Copy the directory:
+### Basic example (no custom cards)
 
-custom_components/system_overview
+This example works on a completely default Home Assistant installation
+and does **not require any custom Lovelace cards**.
 
-to:
+```yaml
+type: vertical-stack
+cards:
+  - type: entities
+    title: System logs
+    entities:
+      - select.system_overview_log_provider
 
+  - type: markdown
+    entity_id:
+      - sensor.system_overview_logs
+      - select.system_overview_log_provider
+    content: >
+      {% set provider = states('select.system_overview_log_provider') %}
+      {% set t = state_attr('sensor.system_overview_logs', 'text') %}
+      **Source:** {{ provider }}
 
-/config/custom_components/system_overview
+      ```text
+      {{ t if t else 'No log data' }}
+      ```
 
-2. Restart Home Assistant
+Advanced dashboard
+A complete system dashboard including Core, Supervisor, Host information,
+restart buttons, and a log viewer is available in:
+docs/dashboard-advanced.yaml
 
----
+This advanced example uses optional custom Lovelace cards such as:
 
-## Configuration
+entity-progress-card
 
-After installation:
+These cards are not required for the integration itself and are only
+used to improve visual presentation.
+Optional custom cards
+If you choose to use the advanced dashboard, you may need:
 
-1. Go to **Settings → Devices & Services**
-2. Click **Add integration**
-3. Search for **System Overview**
-4. Complete the setup dialog
+entity-progress-card
 
-No YAML configuration is required.
+These are optional and not installed automatically.
+Screenshots
+Screenshots of the advanced dashboard can be found in:
+docs/images/
 
----
+Installation
+Install using HACS:
 
-## Development notes
+Open HACS
+Add this repository as a custom integration
+Install System Overview
+Restart Home Assistant
 
-This integration focuses purely on system-level observability.
-The exposed sensors and diagnostics may change as Home Assistant
-internal APIs evolve.
-
-The integration is developed and tested primarily on
-**Home Assistant Supervised** installations.
-
----
-
-## License
-
-MIT License
+After installation, add the integration via Settings → Devices & Services.
