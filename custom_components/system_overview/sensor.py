@@ -118,7 +118,10 @@ async def async_setup_entry(hass, entry, async_add_entities):
             coordinator, "supervisor_memory_percent", "Supervisor Memory Percent",
             ["supervisor", "supervisor_stats", "memory_percent"], "%", SensorStateClass.MEASUREMENT, 2
         ),
-
+        SystemOverviewBaseSensor(
+            coordinator, "hostname", "Hostname",
+            ["host", "hostname"], None, None, None
+        ),
         SystemOverviewBaseSensor(
             coordinator, "host_ip", "Host IP",
             ["host", "ip_address"], None, None, None
@@ -133,7 +136,7 @@ async def async_setup_entry(hass, entry, async_add_entities):
         ),
         SystemOverviewBaseSensor(
             coordinator, "docker_version", "Docker Version",
-            ["supervisor", "host_info", "docker"], None, None, None,
+            ["host", "docker_version"], None, None, None,
         ),
         SystemOverviewBaseSensor(
             coordinator, "host_cpu", "Host CPU Percent",

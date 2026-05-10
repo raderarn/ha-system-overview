@@ -45,6 +45,31 @@ async def _supervisor_get_json(session, token, path):
         return None
 
 
+def _extract_docker_version(info_obj, host_obj):
+    candidates = []
+
+    if isinstance(info_obj, dict):
+        candidates.append(info_obj.get("docker"))
+        candidates.append(info_obj.get("docker_version"))
+        candidates.append(info_obj.get("container_engine"))
+        docker_obj = info_obj.get("docker")
+        if isinstance(docker_obj, dict):
+            candidates.append(docker_obj.get("version"))
+
+    if isinstance(host_obj, dict):
+        candidates.append(host_obj.get("docker"))
+        candidates.append(host_obj.get("docker_version"))
+        docker_obj = host_obj.get("docker")
+        if isinstance(docker_obj, dict):
+            candidates.append(docker_obj.get("version"))
+
+    for c in candidates:
+        if isinstance(c, str) and c.strip():
+            return c.strip()
+
+    return None
+
+
 class SystemOverviewCoordinator(DataUpdateCoordinator):
     def __init__(self, hass: HomeAssistant):
         psutil.cpu_percent(interval=None)
@@ -62,9 +87,12 @@ class SystemOverviewCoordinator(DataUpdateCoordinator):
         disk = psutil.disk_usage("/")
         ip4 = _get_primary_ipv4()
 
+        host_os = await self.hass.async_add_executor_job(platform.platform)
+
         token = os.environ.get("SUPERVISOR_TOKEN")
         supervisor_core_info = None
         supervisor_info = None
+        supervisor_system_info = None
         host_info = None
         core_stats = None
         supervisor_stats = None
@@ -72,9 +100,12 @@ class SystemOverviewCoordinator(DataUpdateCoordinator):
         if token:
             supervisor_core_info = await _supervisor_get_json(self._session, token, "/core/info")
             supervisor_info = await _supervisor_get_json(self._session, token, "/supervisor/info")
+            supervisor_system_info = await _supervisor_get_json(self._session, token, "/info")
             host_info = await _supervisor_get_json(self._session, token, "/host/info")
             core_stats = await _supervisor_get_json(self._session, token, "/core/stats")
             supervisor_stats = await _supervisor_get_json(self._session, token, "/supervisor/stats")
+
+        docker_version = _extract_docker_version(supervisor_system_info, host_info)
 
         return {
             "core": {
@@ -83,10 +114,11 @@ class SystemOverviewCoordinator(DataUpdateCoordinator):
             "host": {
                 "hostname": socket.gethostname(),
                 "ip_address": ip4,
-                "os": platform.platform(),
+                "os": host_os,
                 "cpu_percent": cpu_percent,
                 "memory_percent": mem.percent,
                 "disk_used_percent": disk.percent,
+                "docker_version": docker_version,
             },
             "urls": {
                 "internal_url": self.hass.config.internal_url,
@@ -96,6 +128,7 @@ class SystemOverviewCoordinator(DataUpdateCoordinator):
                 "available": token is not None,
                 "core_info": supervisor_core_info,
                 "supervisor_info": supervisor_info,
+                "system_info": supervisor_system_info,
                 "host_info": host_info,
                 "core_stats": core_stats,
                 "supervisor_stats": supervisor_stats,
