@@ -1,9 +1,10 @@
 {
   "domain": "system_overview",
   "name": "System Overview",
-  "version": "0.0.1",
+  "version": "0.1.0",
+  "config_flow": true,
   "documentation": "https://github.com/raderarn/ha-system-overview",
+  "issue_tracker": "https://github.com/raderarn/ha-system-overview/issues",
   "codeowners": ["@raderarn"],
-  "requirements": [],
   "iot_class": "local_polling"
 }

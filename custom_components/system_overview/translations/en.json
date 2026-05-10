@@ -1,0 +1,14 @@
+{
+  "title": "System Overview",
+  "config": {
+    "step": {
+      "user": {
+        "title": "System Overview",
+        "description": "Create the System Overview integration"
+      }
+    },
+    "abort": {
+      "already_configured": "System Overview is already configured"
+    }
+  }
+}
