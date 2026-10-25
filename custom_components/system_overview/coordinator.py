@@ -107,6 +107,10 @@ class SystemOverviewCoordinator(DataUpdateCoordinator):
 
         docker_version = _extract_docker_version(supervisor_system_info, host_info)
 
+        data_path = None
+        if isinstance(supervisor_info, dict):
+            data_path = supervisor_info.get("data_path")
+
         return {
             "core": {
                 "version": HA_VERSION,
@@ -126,6 +130,7 @@ class SystemOverviewCoordinator(DataUpdateCoordinator):
             },
             "supervisor": {
                 "available": token is not None,
+                "data_path": data_path,
                 "core_info": supervisor_core_info,
                 "supervisor_info": supervisor_info,
                 "system_info": supervisor_system_info,
@@ -134,6 +139,8 @@ class SystemOverviewCoordinator(DataUpdateCoordinator):
                 "supervisor_stats": supervisor_stats,
             },
         }
+
+
 LOG_PROVIDERS = [
     "supervisor",
     "core",
@@ -192,7 +199,6 @@ class SystemOverviewLogsCoordinator(DataUpdateCoordinator):
                 "error": "SUPERVISOR_TOKEN is not set",
             }
 
-        # Common patterns: /<provider>/logs/latest and /<provider>/logs 
         text = await _supervisor_get_text(self._session, token, "/" + self.provider + "/logs/latest")
         if text is None:
             text = await _supervisor_get_text(self._session, token, "/" + self.provider + "/logs")
