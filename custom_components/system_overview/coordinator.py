@@ -17,6 +17,23 @@ from .const import DOMAIN, UPDATE_INTERVAL_SECONDS
 _LOGGER = logging.getLogger(__name__)
 
 
+def _get_supervisor_data_path() -> str | None:
+    """Hämtar den faktiska databanan för Supervisor från container-monteringen."""
+    try:
+        if os.path.exists("/proc/self/mountinfo"):
+            with open("/proc/self/mountinfo", "r", encoding="utf-8") as f:
+                for line in f:
+                    parts = line.split()
+                    if len(parts) >= 5 and parts[4] == "/config":
+                        host_path = parts[3]
+                        if host_path.endswith("/homeassistant"):
+                            return host_path[:-14]
+                        return host_path
+    except Exception:
+        pass
+    return None
+
+
 def _get_primary_ipv4():
     try:
         for ifname, addrs in psutil.net_if_addrs().items():
@@ -107,9 +124,12 @@ class SystemOverviewCoordinator(DataUpdateCoordinator):
 
         docker_version = _extract_docker_version(supervisor_system_info, host_info)
 
-        data_path = None
-        if isinstance(supervisor_info, dict):
-            data_path = supervisor_info.get("data_path")
+        # Läs ut den faktiska databanan dynamiskt
+        data_path = await self.hass.async_add_executor_job(_get_supervisor_data_path)
+
+        # Stoppa in data_path i supervisor_info så sensor.py hittar den
+        if isinstance(supervisor_info, dict) and data_path:
+            supervisor_info["data_path"] = data_path
 
         return {
             "core": {
