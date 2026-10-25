@@ -152,6 +152,10 @@ async def async_setup_entry(hass, entry, async_add_entities):
             coordinator, "supervisor_supported", "Installation Supported",
             ["supervisor", "supervisor_info", "supported"], None, None, None
         ),
+        SystemOverviewBaseSensor(
+            coordinator, "supervisor_data_path", "Supervisor Data Path",
+            ["supervisor", "supervisor_info", "data_path"], None, None, None
+        ),
 
         SystemOverviewBaseSensor(
             coordinator, "core_cpu_percent", "Core CPU Percent",
